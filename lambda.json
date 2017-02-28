@@ -1,9 +1,0 @@
-{
-  "name": "twitter-today-ticket",
-  "description": "twitterで謎解きイベントの当日券情報を取得しなぞまっぷに投稿",
-  "region": "ap-northeast-1",
-  "handler": "twitter-today-ticket.lambda_handler",
-  "role": "arn:aws:iam::850890597300:role/lambda_basic_execution_dynamodb_access",
-  "timeout": 300,
-  "memory": 128
-}

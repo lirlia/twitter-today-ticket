@@ -34,8 +34,6 @@ hatenaBlogname = 'lirlia.hatenablog.com'
 hatenaDraft = 'no'
 hatenaBlogEntryId = '10328749687222146045'
 
-## その他の変数
-today = datetime.date.today()
 
 #
 # 特定の条件を満たすTweetを検索
@@ -43,13 +41,13 @@ today = datetime.date.today()
 # 戻り値: 条件を満たしたツイートの検索結果
 # https://dev.twitter.com/rest/reference/get/search/tweets
 #
-def SearchTweet():
+def SearchTweet(today):
 
     url = "https://api.twitter.com/1.1/search/tweets.json"
 
     searchWord = \
         '-RT list:' + twitterListName +  ' ' + \
-        'since:' + today.strftime("%Y-%m-%d") + ' ' \
+        'since:' + today.strftime("%Y-%m-%d") + '_00:00:00_JST ' \
         u'"当日券" OR "当日予約" -"全て完売" -"全ての回完売"'
 
     params = {'q': searchWord, 'count': 100 }
@@ -76,7 +74,7 @@ def Wsse():
 #
 # HatenaBlogへの記事の投稿
 #
-def PostHatena(nazoList):
+def PostHatena(nazoList, today):
 
     day1 = today.strftime("%Y/%m/%d")
 
@@ -88,10 +86,13 @@ def PostHatena(nazoList):
       u'[f:id:lirlia:20170228220149p:plain]\n' \
       u'====\n' \
       u'こんばんは、[https://twitter.com/intent/user?original_referer=http%3A%2F%2Flirlia.hatenablog.com%2F&amp;region=follow&amp;screen_name=tenhouginsama&amp;tw_p=followbutton&amp;variant=2.0:title=(@tenhouginsama)]です。  \n' \
-      u'\n「' + day1 + u'」のリアル脱出ゲーム・リアル謎解き当日券情報です。\n' \
-      u'いまから謎解きに行こう！(この記事は5分間隔で自動更新されます)\n' \
       u'\n' \
-      u'同一公演の当日券情報が複数ある場合、ツイート情報は新しい順番から並んでいます。最新の当日券情報は一番上のツイートを参照してください。\n' \
+      u'\n「' + day1 + u'」のリアル脱出ゲーム・リアル謎解き当日券情報です。いまから謎解きに行こう！(この記事は10分間隔で自動更新されます)\n' \
+      u'※23時〜7時の間は更新をしません\n' \
+      u'\n' \
+      u'\n' \
+      u'同一公演の当日券情報が複数ある場合は、一番上のツイートが最新です。\n' \
+      u'\n' \
       u'\n' \
       u'*目次\n' \
       u'[:contents]\n' \
@@ -123,10 +124,11 @@ def PostHatena(nazoList):
 
         i_before = i
 
+    day1 = today.strftime("%Y-%m-%d")
     body = body +  u'\n*集計条件\n' \
       u'- 本日(' + day1 + u')投稿されたツイートであること。\n' \
       u'- 集計対象Twitterアカウントに入っていること\n' \
-      u'- Twitter検索にて「list:tenhouginsama/nazo-news "当日券" OR "当日予約" -"全て完売" -"全ての回完売" since:' + day1 + u' 」でツイートがヒットすること\n' \
+      u'- Twitter検索にて「list:tenhouginsama/nazo-news "当日券" OR "当日予約" -"全て完売" -"全ての回完売" since:' + day1 + u'_00:00:00_JST 」でツイートがヒットすること\n' \
       u'\n' \
       u'*集計対象Twitterアカウント\n' \
       u'下記のTwitterリストに入っているアカウントが集計対象となります。\n' \
@@ -161,10 +163,18 @@ def PostHatena(nazoList):
 
 def lambda_handler(event, context):
 
+    ## その他の変数
+    # AWS Lamdaで稼働させる場合UTCのため、JSTに変換するために0900を足す
+    # たさない場合日がずれてしまい、意図通りに集計できない
+
+    # lambda_handlerの中じゃないと時刻が再取得されない場合があるので移動
+    # http://qiita.com/yutaro1985/items/a24b572624281ebaa0dd
+    today = datetime.datetime.today() + datetime.timedelta(hours=9)
+
     nazoList = []
 
     # 対象のアカウントのツイートから条件を満たしているものを抽出
-    for tweet in SearchTweet()['statuses']:
+    for tweet in SearchTweet(today)['statuses']:
 
         # データの格納
         nazoList.append({
@@ -175,6 +185,6 @@ def lambda_handler(event, context):
 
 
     # ブログへ記事を投稿
-    PostHatena(nazoList)
+    PostHatena(nazoList, today)
 
-    return { "messages":"success!" }
+    return { "date": today.strftime("%Y/%m/%d %H:%M:%S") }
