@@ -88,7 +88,7 @@ def PostHatena(nazoList, today):
       u'こんばんは、[https://twitter.com/intent/user?original_referer=http%3A%2F%2Flirlia.hatenablog.com%2F&amp;region=follow&amp;screen_name=tenhouginsama&amp;tw_p=followbutton&amp;variant=2.0:title=(@tenhouginsama)]です。  \n' \
       u'\n' \
       u'\n「' + day1 + u'」のリアル脱出ゲーム・リアル謎解き当日券情報です。いまから謎解きに行こう！(この記事は10分間隔で自動更新されます)\n' \
-      u'※23時〜7時の間は更新をしません\n' \
+      u'※22時〜7時の間は更新をしません\n' \
       u'\n' \
       u'\n' \
       u'同一公演の当日券情報が複数ある場合は、一番上のツイートが最新です。\n' \
