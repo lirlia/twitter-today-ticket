@@ -13,6 +13,7 @@ import hashlib
 import base64
 import requests
 import re
+from xml.sax.saxutils import *
 
 ## Twitter系の変数
 # OAuth認証 セッションを開始
@@ -48,7 +49,7 @@ def SearchTweet(today):
     searchWord = \
         '-RT list:' + twitterListName +  ' ' + \
         'since:' + today.strftime("%Y-%m-%d") + '_00:00:00_JST ' \
-        u'"当日券" OR "当日予約" -"全て完売" -"全ての回完売"'
+        u'"当日券" OR "当日予約" -"全て完売" -"全ての回完売" -tenhouginsama'
 
     params = {'q': searchWord, 'count': 100 }
     req = twitter.get(url, params = params)
@@ -83,22 +84,20 @@ def PostHatena(nazoList, today):
     title = u'今日行ける「リアル脱出ゲーム・謎解きイベント」の当日券情報（自動更新）'
 
     body = \
-      u'[f:id:lirlia:20170228220149p:plain]\n' \
-      u'====\n' \
-      u'こんばんは、[https://twitter.com/intent/user?original_referer=http%3A%2F%2Flirlia.hatenablog.com%2F&amp;region=follow&amp;screen_name=tenhouginsama&amp;tw_p=followbutton&amp;variant=2.0:title=(@tenhouginsama)]です。  \n' \
-      u'\n' \
-      u'\n「' + day1 + u'」のリアル脱出ゲーム・リアル謎解き当日券情報です。いまから謎解きに行こう！(この記事は10分間隔で自動更新されます)\n' \
-      u'※22時〜7時の間は更新をしません\n' \
-      u'\n' \
-      u'\n' \
-      u'同一公演の当日券情報が複数ある場合は、一番上のツイートが最新です。\n' \
-      u'\n' \
-      u'\n' \
-      u'*目次\n' \
-      u'[:contents]\n' \
-      u'\n' \
-      u'*当日券情報一覧\n\n'
-
+        u'<p><img class="hatena-fotolife" title="画像" src="https://cdn-ak.f.st-hatena.com/images/fotolife/l/lirlia/20170228/20170228220149.png" alt="f:id:lirlia:20161124194747j:plain" /></p>' \
+        u'<p><!-- more --></p>' \
+        u'<p> 最終更新日時: <strong>' + str(today.strftime("%Y/%m/%d %H:%M:%S")) + '</strong></p>'  \
+        u'<p></p>' \
+        u'<p></p>' \
+        u'<p>こんにちは、<span id="myicon"> </span><a href="https://twitter.com/intent/user?original_referer=http://lirlia.hatenablog.com/&amp;region=follow&amp;screen_name=tenhouginsama&amp;tw_p=followbutton&amp;variant=2.0">ぎん</a>です。 <br /><br />' \
+        u'<p> </p>' \
+        u'<p>この記事ではTwitterで公開されている今遊べるリアル脱出ゲーム・リアル謎解きの<strong>「当日券情報」</strong>を紹介します。10分間隔で更新されますので、空いている公演をみつけていまから謎解きに行きましょう！</p>' \
+        u'<p> </p>' \
+        u'<ul><li>当日券情報が複数ある場合は一番上のツイートが最新です</li></ul>' \
+        u'<p> </p>' \
+        u'<p>[:contents]</p>' \
+        u'<p> </p>' \
+        u'<h3>当日券情報一覧</h3>' \
 
     i_before = ""
     # 配列内の辞書要素（Twitter名）で並び替え
@@ -106,46 +105,43 @@ def PostHatena(nazoList, today):
     sortNazoList = sorted(nazoList, key=lambda k: (k['userName'],int(k['tweetID'])),reverse=True)
 
     if len(sortNazoList) == 0:
-        body = body + u'本日(' + day1 + u')の当日券の情報はありません。'
+        body = body + u'<p>本日の当日券の情報はありません。</p>'
 
     for i in sortNazoList:
         if i_before != "":
             if i['userName'] == i_before['userName']:
-                body = body + u'\n[https://twitter.com/' + i['twitterID'] + u'/status/' + str(i['tweetID']) + u':embed]  '
+                body = body + u'<p>[https://twitter.com/' + i['twitterID'] + u'/status/' + str(i['tweetID']) + u':embed]</p>'
             else:
-                body = body + u'\n**' + i['userName'].replace(u'&',u' ') + u'\n' + \
-              u'[https://twitter.com/' + i['twitterID'] + u'/status/' + str(i['tweetID']) + u':embed]  '
+                body = body + u'<h4>' + i['userName'].replace(u'&',u' ') + u'</h4>' + \
+              u'<p>[https://twitter.com/' + i['twitterID'] + u'/status/' + str(i['tweetID']) + u':embed]</p>'
         else:
-            body = body + u'\n**' + i['userName'].replace(u'&',u' ') + u'\n' + \
-          u'[https://twitter.com/' + i['twitterID'] + u'/status/' + str(i['tweetID']) + u':embed]  '
-
-
-        body = body + u'\n\n'
+            body = body + u'<h4>' + i['userName'].replace(u'&',u' ') + u'</h4>' + \
+          u'<p>[https://twitter.com/' + i['twitterID'] + u'/status/' + str(i['tweetID']) + u':embed]</p>'
 
         i_before = i
 
     day1 = today.strftime("%Y-%m-%d")
-    body = body +  u'\n*集計条件\n' \
-      u'- 本日(' + day1 + u')投稿されたツイートであること。\n' \
-      u'- 集計対象Twitterアカウントに入っていること\n' \
-      u'- Twitter検索にて「list:tenhouginsama/nazo-news "当日券" OR "当日予約" -"全て完売" -"全ての回完売" since:' + day1 + u'_00:00:00_JST 」でツイートがヒットすること\n' \
-      u'\n' \
-      u'*集計対象Twitterアカウント\n' \
-      u'下記のTwitterリストに入っているアカウントが集計対象となります。\n' \
-      u'-https://twitter.com/tenhouginsama/lists/nazo-news/members\n' \
-      u'\n' \
-      u'<b>「このアカウントも収集対象に追加して欲しい」</b>というご要望があれば[https://twitter.com/intent/user?original_referer=http%3A%2F%2Flirlia.hatenablog.com%2F&amp;region=follow&amp;screen_name=tenhouginsama&amp;tw_p=followbutton&amp;variant=2.0:title=(@tenhouginsama)]までご連絡ください。' \
-      u'\n' \
-      u'*記事の修正について\n' \
-      u'この記事は<b>自動投稿</b>されています。明らかに違うツイートが貼り付けられている場合はお手数ですが[https://twitter.com/intent/user?original_referer=http%3A%2F%2Flirlia.hatenablog.com%2F&amp;region=follow&amp;screen_name=tenhouginsama&amp;tw_p=followbutton&amp;variant=2.0:title=(@tenhouginsama)]までご連絡ください。\n' \
-      u'\n'
-
+    body = body + u'<h3>この記事について</h3>' \
+        u'<h4>集計の条件</h4>' \
+        u'<ul>' \
+        u'<li>本日(' + day1 + u')投稿されたツイートであること</li>' \
+        u'<li>集計対象Twitterアカウントに入っていること</li>' \
+        u'<li>Twitter検索にて「list:tenhouginsama/nazo-news "当日券" OR "当日予約" -"全て完売" -"全ての回完売" since:' + day1 + u'_00:00:00_JST 」でツイートがヒットすること</li>' \
+        u'</ul><p></p>' \
+        u'<h4>集計対象のTwitterアカウント</h4>' \
+        u'<p>下記のTwitterリストに入っているアカウントが集計対象となります。</p>' \
+        u'<ul><li>https://twitter.com/tenhouginsama/lists/nazo-news/members</ul></li>' \
+        u'<p>「このアカウントも収集対象に追加して欲しい」というご要望があれば[https://twitter.com/intent/user?original_referer=http%3A%2F%2Flirlia.hatenablog.com%2F&amp;region=follow&amp;screen_name=tenhouginsama&amp;tw_p=followbutton&amp;variant=2.0:title=(@tenhouginsama)]までご連絡ください。</p>' \
+        u'<h4>記事の修正について</h4>' \
+        u'<p>この記事は<strong>自動投稿</strong>されています。明らかに違うツイートが貼り付けられている場合はお手数ですが[https://twitter.com/intent/user?original_referer=http%3A%2F%2Flirlia.hatenablog.com%2F&amp;region=follow&amp;screen_name=tenhouginsama&amp;tw_p=followbutton&amp;variant=2.0:title=(@tenhouginsama)]までご連絡ください。</p>'
+    body = escape(body)
     data = \
         u'<?xml version="1.0" encoding="utf-8"?>' \
         u'<entry xmlns="http://www.w3.org/2005/Atom"' \
         u'xmlns:app="http://www.w3.org/2007/app">' \
-        u'<title>' + title + '</title>' \
-        u'<author><name>name</name></author>' \
+        u'<title>' + title + u'</title>' \
+        u'<author><name>ぎん</name></author>' \
+        u'<updated>2017-03-01T00:00:00</updated>' \
         u'<content type="text/plain">' + body + u'</content>' \
         u'<category term="当日券情報" />' \
         u'<app:control>' \
