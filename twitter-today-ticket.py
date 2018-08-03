@@ -89,7 +89,7 @@ def PostHatena(nazoList, today):
         u'<p> 最終更新日時: <strong>' + str(today.strftime("%Y/%m/%d %H:%M:%S")) + '</strong></p>'  \
         u'<p></p>' \
         u'<p></p>' \
-        u'<p>こんにちは、<span id="myicon"> </span><a href="https://twitter.com/intent/user?original_referer=http://lirlia.hatenablog.com/&amp;region=follow&amp;screen_name=tenhouginsama&amp;tw_p=followbutton&amp;variant=2.0">ぎん</a>です。 <br /><br />' \
+        u'<p>こんにちは、<span id="myicon"> </span><a href="https://twitter.com/intent/user?original_referer=https://www.nazomap.com/&amp;region=follow&amp;screen_name=tenhouginsama&amp;tw_p=followbutton&amp;variant=2.0">ぎん</a>です。 <br /><br />' \
         u'<p> </p>' \
         u'<p>この記事ではTwitterで公開されている今遊べるリアル脱出ゲーム・リアル謎解きの<strong>「当日券情報」</strong>を紹介します。10分間隔で更新されますので、空いている公演をみつけていまから謎解きに行きましょう！</p>' \
         u'<p> </p>' \
