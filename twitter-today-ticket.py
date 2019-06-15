@@ -137,7 +137,7 @@ def PostHatena(nazoList, today):
     body = escape(body)
     data = \
         u'<?xml version="1.0" encoding="utf-8"?>' \
-        u'<entry xmlns="http://www.w3.org/2005/Atom"' \
+        u'<entry xmlns="http://www.w3.org/2005/Atom" ' \
         u'xmlns:app="http://www.w3.org/2007/app">' \
         u'<title>' + title + u'</title>' \
         u'<author><name>ぎん</name></author>' \
